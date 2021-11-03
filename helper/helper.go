@@ -23,7 +23,7 @@ func ConnectDB() *mongo.Collection {
 
 	fmt.Println("Connected to MongoDB!")
 
-	collection := client.Database("testing123").Collection("configs")
+	collection := client.Database("testing12").Collection("configs")
 
 	return collection
 }
