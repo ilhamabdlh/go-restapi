@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	
-	
 	"github.com/ilhamabdlh/go-restapi/helper"
 	"github.com/ilhamabdlh/go-restapi/models"
 	"github.com/gorilla/mux"
@@ -34,7 +33,7 @@ func getConfigs(w http.ResponseWriter, r *http.Request) {
 
 	for cur.Next(context.TODO()) {
 
-		// create a value into which the single document can be decoded
+		
 		var config models.Config
 		// & character returns the memory address of the following variable.
 		err := cur.Decode(&config) // decode similar to deserialize process.
@@ -80,7 +79,7 @@ func getConfig(w http.ResponseWriter, r *http.Request) {
 func createConfigs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var book models.Config
+	var config models.Config
 
 	// we decode our body request params
 	_ = json.NewDecoder(r.Body).Decode(&config)
@@ -131,7 +130,7 @@ func updateConfigs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	book.ID = id
+	config.ID = id
 
 	json.NewEncoder(w).Encode(config)
 }
@@ -167,9 +166,10 @@ func main() {
 	r := mux.NewRouter()
 
   	// arrange our route
-	r.HandleFunc("/decsriptors/configs", getBooks).Methods("GET")
-	r.HandleFunc("/decsriptors/configs{id}", getBook).Methods("GET")
-	r.HandleFunc("/decsriptors/configs{id}", updateBook).Methods("PUT")
+	r.HandleFunc("/decsriptors/configs", getConfigs).Methods("GET")
+	r.HandleFunc("/decsriptors/configs{id}", getConfig).Methods("GET")
+	r.HandleFunc("/decsriptors/configs{id}", updateConfigs).Methods("PUT")
+	r.HandleFunc("/decsriptors/configs", createConfigs).Methods("POST")
 
   	// set our port address
 	log.Fatal(http.ListenAndServe(":8000", r))

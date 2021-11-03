@@ -3,14 +3,14 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 //Create Struct
-type Book struct {
-	ID     primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	Type   string             `json:"type,omitempty" bson:"type,omitempty"`
-	Name  	string             `json:"name" bson:"name,omitempty"`
-	Protocol *Protocol            `json:"protocol" bson:"protocol,omitempty"`
+type Config struct {
+	ID     primitive.ObjectID `json:"_id" bson:"_id"`
+	Type   string             `json:"type" bson:"type"`
+	Name  	string             `json:"name" bson:"name"`
+	Protocol *Protocol            `json:"protocol" bson:"protocol"`
 }
 
 type Protocol struct {
-	Typee  string `json:"typee,omitempty" bson:"typee,omitempty"`
-	Namee  string `json:"namee,omitempty" bson:"namee,omitempty"`
+	Typee  string `json:"typee" bson:"typee"`
+	Namee  string `json:"namee" bson:"namee"`
 }
