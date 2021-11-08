@@ -1,4 +1,4 @@
-package server
+package configes
 
 import (
 	"context"
@@ -166,7 +166,7 @@ func deleteConfigs(w http.ResponseWriter, r *http.Request) {
 
 
 
-func Configs() {
+func configes() {
 	//Init Router
 	r := mux.NewRouter()
 
