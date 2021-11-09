@@ -80,7 +80,7 @@ func getProtocol(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func createProtocol(w http.ResponseWriter, r *http.Request) {
+func createProtocols(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var protocol models.Protocol
