@@ -1,16 +1,33 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
-//Create Struct
 type Config struct {
-	ID     primitive.ObjectID `json:"_id" bson:"_id"`
-	Type   string             `json:"type" bson:"type"`
-	Name  	string             `json:"name" bson:"name"`
-	Protocol *Protocol            `json:"protocol" bson:"protocol"`
+	
+	Id		string			`json:"id,omitempty" bson:"id,omitempty"`
+	Type   string             `json:"type,omitempty" bson:"type,omitempty"`
+	Name  	string             `json:"name" bson:"name,omitempty"`
+	Protocol string            `json:"protocol" bson:"protocol,omitempty"`
+}
+
+type Status struct {
+	
+	Id		string			`json:"id,omitempty" bson:"id,omitempty"`
+	Type   string             `json:"type,omitempty" bson:"type,omitempty"`
+	Name  	string             `json:"name" bson:"name,omitempty"`
+	Protocol string            `json:"protocol" bson:"protocol,omitempty"`
 }
 
 type Protocol struct {
-	Typee  string `json:"typee" bson:"typee"`
-	Namee  string `json:"namee" bson:"namee"`
+	Id	   string `json:"id,omitempty" bson:"id,omitempty"`
+	Type  string `json:"type,omitempty" bson:"type,omitempty"`
+	Name  string `json:"name,omitempty" bson:"name,omitempty"`
+	Items string `json:"items,omitempty" bson:"items,omitempty"`
+}
+type Descriptor struct {
+	Id	   string `json:"id,omitempty" bson:"id,omitempty"`
+	Type  string `json:"type,omitempty" bson:"type,omitempty"`
+	Name  string `json:"name,omitempty" bson:"name,omitempty"`
+	Version string `json:"version,omitempty" bson:"version,omitempty"`
+	Modules string `json:"modules,omitempty" bson:"modules,omitempty"`
+	Configs string `json:"configs,omitempty" bson:"configs,omitempty"`
+	Status string `json:"status,omitempty" bson:"status,omitempty"`
 }
