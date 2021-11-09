@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 
-var collection = helper.ConnectStatusesDB()
+var collectionStatus = helper.ConnectStatusesDB()
 func getStatuses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -21,7 +21,7 @@ func getStatuses(w http.ResponseWriter, r *http.Request) {
 	var statuses []models.Status
 
 	// bson.M{},  we passed empty filter. So we want to get all data.
-	cur, err := collection.Find(context.TODO(), bson.M{})
+	cur, err := collectionStatus.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -68,7 +68,7 @@ func getStatus(w http.ResponseWriter, r *http.Request) {
 
 	// We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
 	filter := bson.M{"id": id}
-	err := collection.FindOne(context.TODO(), filter).Decode(&status)
+	err := collectionStatus.FindOne(context.TODO(), filter).Decode(&status)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -87,7 +87,7 @@ func createStatus(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&status)
 
 	// insert our book model.
-	result, err := collection.InsertOne(context.TODO(), status)
+	result, err := collectionStatus.InsertOne(context.TODO(), status)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -123,7 +123,7 @@ func updateStatuses(w http.ResponseWriter, r *http.Request) {
 		}},
 	}
 
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&status)
+	err := collectionStatus.FindOneAndUpdate(context.TODO(), filter, update).Decode(&status)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -148,7 +148,7 @@ func deleteStatuses(w http.ResponseWriter, r *http.Request) {
 	// prepare filter.
 	filter := bson.M{"id": id}
 
-	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+	deleteResult, err := collectionStatus.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		helper.GetError(err, w)

@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 //Connection mongoDB with helper class
-var collection = helper.ConnectDescriptorsDB()
+var collectionDescriptor = helper.ConnectDescriptorsDB()
 
 func getDescriptors(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -22,7 +22,7 @@ func getDescriptors(w http.ResponseWriter, r *http.Request) {
 	var descriptors []models.Descriptor
 
 	// bson.M{},  we passed empty filter. So we want to get all data.
-	cur, err := collection.Find(context.TODO(), bson.M{})
+	cur, err := collectionDescriptor.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -69,7 +69,7 @@ func getDescriptor(w http.ResponseWriter, r *http.Request) {
 
 	// We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
 	filter := bson.M{"id": id}
-	err := collection.FindOne(context.TODO(), filter).Decode(&descriptor)
+	err := collectionDescriptor.FindOne(context.TODO(), filter).Decode(&descriptor)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -89,7 +89,7 @@ func createDescriptor(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&descriptor)
 
 	// insert our book model.
-	result, err := collection.InsertOne(context.TODO(), descriptor)
+	result, err := collectionDescriptor.InsertOne(context.TODO(), descriptor)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -127,7 +127,7 @@ func updateDescriptor(w http.ResponseWriter, r *http.Request) {
 		}},
 	}
 
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&descriptor)
+	err := collectionDescriptor.FindOneAndUpdate(context.TODO(), filter, update).Decode(&descriptor)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -153,7 +153,7 @@ func deleteDescriptor(w http.ResponseWriter, r *http.Request) {
 	// prepare filter.
 	filter := bson.M{"id": id}
 
-	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+	deleteResult, err := collectionDescriptor.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		helper.GetError(err, w)

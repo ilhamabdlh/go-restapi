@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 //Connection mongoDB with helper class
-var collection = helper.ConnectConfigsDB()
+var collectionConfig = helper.ConnectConfigsDB()
 
 func getConfigs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -22,7 +22,7 @@ func getConfigs(w http.ResponseWriter, r *http.Request) {
 	var configs []models.Config
 
 	// bson.M{},  we passed empty filter. So we want to get all data.
-	cur, err := collection.Find(context.TODO(), bson.M{})
+	cur, err := collectionConfig.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -69,7 +69,7 @@ func getConfig(w http.ResponseWriter, r *http.Request) {
 
 	// We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
 	filter := bson.M{"id": id}
-	err := collection.FindOne(context.TODO(), filter).Decode(&config)
+	err := collectionConfig.FindOne(context.TODO(), filter).Decode(&config)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -89,7 +89,7 @@ func createConfig(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&config)
 
 	// insert our book model.
-	result, err := collection.InsertOne(context.TODO(), config)
+	result, err := collectionConfig.InsertOne(context.TODO(), config)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -124,7 +124,7 @@ func updateConfigs(w http.ResponseWriter, r *http.Request) {
 		}},
 	}
 
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&config)
+	err := collectionConfig.FindOneAndUpdate(context.TODO(), filter, update).Decode(&config)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -150,7 +150,7 @@ func deleteConfigs(w http.ResponseWriter, r *http.Request) {
 	// prepare filter.
 	filter := bson.M{"id": id}
 
-	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+	deleteResult, err := collectionConfig.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		helper.GetError(err, w)

@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 //Connection mongoDB with helper class
-var collection = helper.ConnectProtocolsDB()
+var collectionProtocol = helper.ConnectProtocolsDB()
 
 func getProtocols(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -22,7 +22,7 @@ func getProtocols(w http.ResponseWriter, r *http.Request) {
 	var protocols []models.Protocol
 
 	// bson.M{},  we passed empty filter. So we want to get all data.
-	cur, err := collection.Find(context.TODO(), bson.M{})
+	cur, err := collectionProtocol.Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -69,7 +69,7 @@ func getProtocol(w http.ResponseWriter, r *http.Request) {
 
 	// We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
 	filter := bson.M{"id": id}
-	err := collection.FindOne(context.TODO(), filter).Decode(&protocol)
+	err := collectionProtocol.FindOne(context.TODO(), filter).Decode(&protocol)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -89,7 +89,7 @@ func createProtocols(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&protocol)
 
 	// insert our book model.
-	result, err := collection.InsertOne(context.TODO(), protocol)
+	result, err := collectionProtocol.InsertOne(context.TODO(), protocol)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -124,7 +124,7 @@ func updateProtocol(w http.ResponseWriter, r *http.Request) {
 		}},
 	}
 
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&protocol)
+	err := collectionProtocol.FindOneAndUpdate(context.TODO(), filter, update).Decode(&protocol)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -150,7 +150,7 @@ func deleteProtocol(w http.ResponseWriter, r *http.Request) {
 	// prepare filter.
 	filter := bson.M{"id": id}
 
-	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+	deleteResult, err := collectionProtocol.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		helper.GetError(err, w)
