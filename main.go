@@ -4,8 +4,12 @@ import (
 	"github.com/ilhamabdlh/go-restapi/collections"
 	"github.com/gorilla/handlers"
 )
-Router := mux.NewRouter()
-func main(){
+
+type Route struct{
+	Router := mux.NewRouter()
+}
+
+func Main(){
 	collections.MainProtocols(Router)
 	collections.MainStatus(Router)
 	collections.MainConfigs(Router)
