@@ -10,7 +10,8 @@ import (
 	"github.com/ilhamabdlh/go-restapi/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	"github.com/gorilla/handlers"
+	gomain "github.com/ilhamabdlh/go-restapi/main"
+	// "github.com/gorilla/handlers"
 )
 
 var collectionStatus = helper.ConnectStatusesDB()
@@ -99,7 +100,7 @@ func createStatus(w http.ResponseWriter, r *http.Request) {
 
 
 func updateStatuses(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	var params = mux.Vars(r)
 	//Get id from parameters
@@ -160,8 +161,7 @@ func deleteStatuses(w http.ResponseWriter, r *http.Request) {
 
 func MainStatus() {
 	//Init Router
-	r := mux.NewRouter()
-
+	r := gomain.Route
   	// arrange our route
 	r.HandleFunc("/descriptor/statuses", getStatuses).Methods("GET")
 	r.HandleFunc("/descriptor/status/{id}", getStatus).Methods("GET")
@@ -169,9 +169,10 @@ func MainStatus() {
 	r.HandleFunc("/descriptor/status/{id}", updateStatuses).Methods("PUT")
 	r.HandleFunc("/descriptor/status/{id}", deleteStatuses).Methods("DELETE")
 
-	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
-	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
-	origin := handlers.AllowedOrigins([]string{"*"})
-	http.ListenAndServe(":4001", handlers.CORS(headers, methods, origin)(r)) 
+	// headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
+	// methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	// origin := handlers.AllowedOrigins([]string{"*"})
+
+	// log.Fatal(http.ListenAndServe(":4001", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r))) 
 
 }

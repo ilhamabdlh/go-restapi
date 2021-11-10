@@ -10,7 +10,8 @@ import (
 	"github.com/ilhamabdlh/go-restapi/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	"github.com/gorilla/handlers"
+	// "github.com/gorilla/handlers"
+	gomain "github.com/ilhamabdlh/go-restapi/main"
 )
 //Connection mongoDB with helper class
 var collectionDescriptor = helper.ConnectDescriptorsDB()
@@ -100,7 +101,7 @@ func createDescriptor(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateDescriptor(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	var params = mux.Vars(r)
 	//Get id from parameters
@@ -167,7 +168,7 @@ func deleteDescriptor(w http.ResponseWriter, r *http.Request) {
 
 func MainDescriptors() {
 	//Init Router
-	r := mux.NewRouter()
+	r := gomain.Route
 
   	// arrange our route
 	r.HandleFunc("/descriptors/", getDescriptors).Methods("GET")
@@ -176,9 +177,9 @@ func MainDescriptors() {
 	r.HandleFunc("/descriptor/New/{id}", updateDescriptor).Methods("PUT")
 	r.HandleFunc("/descriptor/{id}", deleteDescriptor).Methods("DELETE")
 
-	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
-	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
-	origin := handlers.AllowedOrigins([]string{"*"})
-	http.ListenAndServe(":4001", handlers.CORS(headers, methods, origin)(r)) 
+	// headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
+	// methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	// origin := handlers.AllowedOrigins([]string{"*"})
+	// http.ListenAndServe(":4001", handlers.CORS(headers, methods, origin)(r)) 
 
 }
