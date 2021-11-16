@@ -1,23 +1,25 @@
 package main
 
 import (
-	"github.com/ilhamabdlh/go-restapi/collections"
+	"net/http"
+
 	"github.com/gorilla/handlers"
+	"github.com/ilhamabdlh/go-restapi/collections"
+	"github.com/ilhamabdlh/go-restapi/helper"
 )
 
-type Route struct{
-	Router := mux.NewRouter()
-}
+var Routers = helper.Routes
 
-func Main(){
-	collections.MainProtocols(Router)
-	collections.MainStatus(Router)
-	collections.MainConfigs(Router)
-	collections.MainDescriptors(Router)
-	collections.MainStatus(Router)
+func main() {
+	collections.MainProtocols()
+	collections.MainStatus()
+	collections.MainConfigs()
+	collections.MainDescriptors()
+	collections.MainItems()
+	collections.MainStatus()
 
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
-	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT"})
 	origin := handlers.AllowedOrigins([]string{"*"})
-	http.ListenAndServe(":4001", handlers.CORS(headers, methods, origin)(Router))
+	http.ListenAndServe(":4001", handlers.CORS(headers, methods, origin)(Routers))
 }
