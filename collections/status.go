@@ -15,33 +15,8 @@ import (
 	
 )
 var collectionStatus = helper.ConnectStatusesDB()
-// var collectionStatusProtocol = helper.ConnectStatusesDB()
 func getStatuses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	// var statuses []models.Status
-	// cur, err := collectionStatus.Find(context.TODO(), bson.M{})
-
-	// if err != nil {
-	// 	helper.GetError(err, w)
-	// 	return
-	// }
-	// defer cur.Close(context.TODO())
-
-	// for cur.Next(context.TODO()) {
-
-	// 	var status models.Status
-	// 	err := cur.Decode(&status) 
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	statuses = append(statuses, status)
-	// }
-
-	// if err := cur.Err(); err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	lookupStage := bson.D{{"$lookup", bson.D{{"from", "protocols"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "protocol"}}}}
@@ -154,8 +129,6 @@ func MainStatus() {
 	r := helper.Routes
 	r.HandleFunc("/descriptor/statuses", getStatuses).Methods("GET")
 	r.HandleFunc("/descriptor/status/{id}", getStatus).Methods("GET")
-	r.HandleFunc("/descriptor/status", createStatus).Methods("POST")
 	r.HandleFunc("/descriptor/status/{id}", updateStatuses).Methods("PUT")
-	r.HandleFunc("/descriptor/status/{id}", deleteStatuses).Methods("DELETE")
 
 }

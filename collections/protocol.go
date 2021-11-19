@@ -18,34 +18,6 @@ var collectionProtocol = helper.ConnectProtocolsDB()
 func getProtocols(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-
-	// var protocols []models.Protocols
-
-	// cur, err := collectionProtocol.Find(context.TODO(), bson.M{})
-
-	// if err != nil {
-	// 	helper.GetError(err, w)
-	// 	return
-	// }
-
-	// defer cur.Close(context.TODO())
-
-	// for cur.Next(context.TODO()) {
-
-	// 	var protocol models.Protocols
-		
-	// 	err := cur.Decode(&protocol) 
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	protocols = append(protocols, protocol)
-	// }
-
-	// if err := cur.Err(); err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	lookupStageTwo := bson.D{{"$lookup", bson.D{{"from", "items"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "items"}}}}
 	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$id"}, {"preserveNullAndEmptyArrays", false}}}}
@@ -172,8 +144,6 @@ func MainProtocols() {
 	r := helper.Routes
 	r.HandleFunc("/descriptor/protocols", getProtocols).Methods("GET")
 	r.HandleFunc("/descriptor/protocol/{id}", getProtocol).Methods("GET")
-	r.HandleFunc("/descriptor/protocols", createProtocols).Methods("POST")
 	r.HandleFunc("/descriptor/protocol/{id}", updateProtocol).Methods("PUT")
-	r.HandleFunc("/descriptor/protocol/{id}", deleteProtocol).Methods("DELETE")
 
 }

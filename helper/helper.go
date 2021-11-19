@@ -19,7 +19,7 @@ func ConnectConfigsDB() *mongo.Collection {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Connected to MongoDB")
+	// fmt.Println("Connected to MongoDB")
 
 	collection := client.Database("mongosDB").Collection("configs")
 
@@ -35,7 +35,7 @@ func ConnectProtocolsDB() *mongo.Collection {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Connected to MongoDB")
+	// fmt.Println("Connected to MongoDB")
 
 	collection := client.Database("mongosDB").Collection("protocols")
 
@@ -65,7 +65,7 @@ func ConnectStatusesDB() *mongo.Collection {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Connected to MongoDB")
+	// fmt.Println("Connected to MongoDB")
 
 	collection := client.Database("mongosDB").Collection("statuses")
 
@@ -80,7 +80,7 @@ func ConnectItemsDB() *mongo.Collection {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Connected to MongoDB")
+	// fmt.Println("Connected to MongoDB")
 
 	collection := client.Database("mongosDB").Collection("items")
 

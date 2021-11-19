@@ -5,15 +5,14 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	// "time"
+
 	"strconv"
 	
 	"github.com/ilhamabdlh/go-restapi/helper"
 	"github.com/ilhamabdlh/go-restapi/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	// "go.mongodb.org/mongo-driver/mongo"
-	// "go.mongodb.org/mongo-driver/bson/primitive"
+
 )
 var collectionDescriptor = helper.ConnectDescriptorsDB()
 
@@ -59,46 +58,6 @@ func getDescriptors(w http.ResponseWriter, r *http.Request) {
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
 	}
-
-	
-
-
-
-
-
-
-
-
-
-
-
-	// ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	// lookupStage := bson.D{{"$lookup", bson.D{{"from", "configs"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "configs"}}}}
-	// lookupStageTwo := bson.D{{"$lookup", bson.D{{"from", "protocols"}, {"localField", "configs.id"}, {"foreignField", "id"}, {"as", "configs.protocol"}}}}
-	// lookupStageThree := bson.D{{"$lookup", bson.D{{"from", "items"}, {"localField", "configs.protocol.id"}, {"foreignField", "id"}, {"as", "configs.protocol.items"}}}}
-	
-	// lookupStageFour := bson.D{{"$lookup", bson.D{{"from", "statuses"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "status"}}}}
-	// lookupStageFive := bson.D{{"$lookup", bson.D{{"from", "protocols"}, {"localField", "status.id"}, {"foreignField", "id"}, {"as", "status.protocol"}}}}
-	// lookupStageSix := bson.D{{"$lookup", bson.D{{"from", "items"}, {"localField", "status.protocol.id"}, {"foreignField", "id"}, {"as", "status.protocol.items"}}}}
-	
-	// unwindStage := bson.D{{"$unwind", bson.D{{"path", "$configs"}, {"preserveNullAndEmptyArrays", false}}}}
-	// unwindStageTwo := bson.D{{"$unwind", bson.D{{"path", "$configs.protocol"}, {"preserveNullAndEmptyArrays", false}}}}
-	// unwindStageThree := bson.D{{"$unwind", bson.D{{"path", "$configs.protocol.items"}, {"preserveNullAndEmptyArrays", false}}}}
-	
-	// unwindStageFour := bson.D{{"$unwind", bson.D{{"path", "$status"}, {"preserveNullAndEmptyArrays", false}}}}
-	// unwindStageFive := bson.D{{"$unwind", bson.D{{"path", "$status.protocol"}, {"preserveNullAndEmptyArrays", false}}}}
-	// unwindStageSix := bson.D{{"$unwind", bson.D{{"path", "$status.protocol.items"}, {"preserveNullAndEmptyArrays", false}}}}
-	
-
-	// showLoadedCursor, err := collectionDescriptor.Aggregate(ctx, mongo.Pipeline{lookupStage, unwindStage, lookupStageTwo, unwindStageTwo, lookupStageThree, unwindStageThree, lookupStageFour, unwindStageFour, lookupStageFive, unwindStageFive, lookupStageSix, unwindStageSix})
-	// if err !=nil{
-	// 	log.Fatal(err)
-	// }
-
-	// var showLoaded []bson.M
-	// if err = showLoadedCursor.All(ctx, &showLoaded); err!= nil{
-	// 	log.Fatal(err)
-	// }
 	
 
 	json.NewEncoder(w).Encode(descriptors)
@@ -255,11 +214,5 @@ func MainDescriptors() {
 	r.HandleFunc("/descriptor/{id}", getDescriptor).Methods("GET")
 	r.HandleFunc("/descriptor/New", createDescriptor).Methods("POST")
 	r.HandleFunc("/descriptor/{id}", updateDescriptor).Methods("PUT")
-	r.HandleFunc("/descriptor/{id}", deleteDescriptor).Methods("DELETE")
-
-	// headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
-	// methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
-	// origin := handlers.AllowedOrigins([]string{"*"})
-	// http.ListenAndServe(":4001", handlers.CORS(headers, methods, origin)(r)) 
 
 }
