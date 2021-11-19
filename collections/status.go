@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 	
 	"github.com/ilhamabdlh/go-restapi/helper"
 	"github.com/ilhamabdlh/go-restapi/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	
 )
 var collectionStatus = helper.ConnectStatusesDB()
@@ -17,37 +19,52 @@ var collectionStatus = helper.ConnectStatusesDB()
 func getStatuses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var statuses []models.Status
-	cur, err := collectionStatus.Find(context.TODO(), bson.M{})
+	// var statuses []models.Status
+	// cur, err := collectionStatus.Find(context.TODO(), bson.M{})
 
-	if err != nil {
-		helper.GetError(err, w)
-		return
-	}
-	defer cur.Close(context.TODO())
+	// if err != nil {
+	// 	helper.GetError(err, w)
+	// 	return
+	// }
+	// defer cur.Close(context.TODO())
 
-	for cur.Next(context.TODO()) {
+	// for cur.Next(context.TODO()) {
 
-		var status models.Status
-		err := cur.Decode(&status) 
-		if err != nil {
-			log.Fatal(err)
-		}
+	// 	var status models.Status
+	// 	err := cur.Decode(&status) 
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
 
-		statuses = append(statuses, status)
-	}
+	// 	statuses = append(statuses, status)
+	// }
 
-	if err := cur.Err(); err != nil {
+	// if err := cur.Err(); err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	lookupStage := bson.D{{"$lookup", bson.D{{"from", "protocols"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "protocol"}}}}
+	lookupStageTwo := bson.D{{"$lookup", bson.D{{"from", "items"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "protocol.items"}}}}
+	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$protocol"}, {"preserveNullAndEmptyArrays", false}}}}
+
+	showLoadedCursor, err := collectionStatus.Aggregate(ctx, mongo.Pipeline{lookupStageTwo, unwindStage, lookupStage})
+	if err !=nil{
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(w).Encode(statuses) 
+	var ShowLoaded []bson.M
+	if err = showLoadedCursor.All(ctx, &ShowLoaded); err!= nil{
+		log.Fatal(err)
+	}
+
+	json.NewEncoder(w).Encode(ShowLoaded) 
 }
 
 func getStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var status models.Status
+	var status models.Statuses
 	var params = mux.Vars(r)
 	
 
@@ -55,7 +72,6 @@ func getStatus(w http.ResponseWriter, r *http.Request) {
 
 	filter := bson.M{"id": id}
 	err := collectionStatus.FindOne(context.TODO(), filter).Decode(&status)
-
 	if err != nil {
 		helper.GetError(err, w)
 		return
@@ -67,7 +83,7 @@ func getStatus(w http.ResponseWriter, r *http.Request) {
 func createStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var status models.Status
+	var status models.Statuses
 
 	_ = json.NewDecoder(r.Body).Decode(&status)
 
@@ -88,7 +104,7 @@ func updateStatuses(w http.ResponseWriter, r *http.Request) {
 	var params = mux.Vars(r)
 	var id string = params["id"]
 
-	var status models.Status
+	var status models.Statuses
 	
 	filter := bson.M{"id": id}
 

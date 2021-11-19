@@ -26,20 +26,6 @@ func ConnectConfigsDB() *mongo.Collection {
 	return collection
 }
 
-func ConnectItemsDB() *mongo.Collection {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Connected to MongoDB")
-
-	collection := client.Database("mongosDB").Collection("items")
-
-	return collection
-}
 
 func ConnectProtocolsDB() *mongo.Collection {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
@@ -82,6 +68,21 @@ func ConnectStatusesDB() *mongo.Collection {
 	fmt.Println("Connected to MongoDB")
 
 	collection := client.Database("mongosDB").Collection("statuses")
+
+	return collection
+}
+
+func ConnectItemsDB() *mongo.Collection {
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	client, err := mongo.Connect(context.TODO(), clientOptions)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Connected to MongoDB")
+
+	collection := client.Database("mongosDB").Collection("items")
 
 	return collection
 }
