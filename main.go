@@ -12,11 +12,9 @@ var Routers = helper.Routes
 
 func main() {
 	collections.MainProtocols()
-	collections.MainStatus()
-	collections.MainConfigs()
-	collections.MainDescriptors()
+	collections.MainStatusConfigs()
 	collections.MainItems()
-	collections.MainStatus()
+	collections.MainDescriptors()
 
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT"})

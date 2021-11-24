@@ -11,29 +11,28 @@ type Descriptor struct {
 	Name    string `json:"name,omitempty" bson:"name,omitempty"`
 	Version string `json:"version,omitempty" bson:"version,omitempty"`
 	Modules []string `json:"modules,omitempty" bson:"modules,omitempty"`
-	Configs Config `json:"configs" bson:"configs"`
-	Status 	Statuses `json:"status" bson:"status"`
+	Configs []Config `json:"configs" bson:"configs"`
+	Status 	[]Statuses `json:"status" bson:"status"`
 }
-
 type Config struct {
 	Id       string `json:"id" bson:"id"`
 	Type     string `json:"type,omitempty" bson:"type,omitempty"`
 	Name     string `json:"name,omitempty" bson:"name,omitempty"`
-	Protocol Protocols `json:"protocol" bson:"protocol"`
+	Protocol []Protocols `json:"protocol" bson:"protocol"`
 }
 
 type Statuses struct {
 	Id       string `json:"id" bson:"id"`
 	Type     string `json:"type,omitempty" bson:"type,omitempty"`
 	Name     string `json:"name" bson:"name,omitempty"`
-	Protocol Protocols `json:"protocol" bson:"protocol"`
+	Protocol []Protocols `json:"protocol" bson:"protocol"`
 }
 
 type Protocols struct {
 	Id    string `json:"id" bson:"id"`
 	Type  string `json:"type,omitempty" bson:"type,omitempty"`
 	Name  string `json:"name" bson:"name,omitempty"`
-	Items Itemes `json:"items" bson:"items"`
+	Items []Itemes `json:"items" bson:"items"`
 }
 
 type Itemes struct {
@@ -49,5 +48,3 @@ type Itemes struct {
 	Ui          bool   `json:"ui,omitempty" bson:"ui,omitempty"`
 	Persist     bool   `json:"persist,omitempty" bson:"persist,omitempty"`
 }
-
-
