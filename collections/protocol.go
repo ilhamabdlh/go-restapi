@@ -5,35 +5,54 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
-	
+
+	"github.com/gorilla/mux"
 	"github.com/ilhamabdlh/go-restapi/helper"
 	"github.com/ilhamabdlh/go-restapi/models"
-	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func getProtocols(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
 	db, _ := helper.Connect()
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	lookupStageTwo := bson.D{{"$lookup", bson.D{{"from", "items"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "items"}}}}
-	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$id"}, {"preserveNullAndEmptyArrays", false}}}}
+	prot, _ := db.Collection("protocols").Find(context.TODO(), bson.M{})
+	it, _ := db.Collection("items").Find(context.TODO(), bson.M{})
 
-	showLoadedCursor, err := db.Collection("protocols").Aggregate(ctx, mongo.Pipeline{lookupStageTwo, unwindStage})
-	if err !=nil{
-		log.Fatal(err)
+	var protocols []models.Protocols
+	var items []models.Items
+
+	var protocol models.Protocols
+	for prot.Next(context.TODO()) {
+		err := prot.Decode(&protocol)
+		if err != nil {
+			log.Fatal(err)
+		}
+		protocols = append(protocols, protocol)
+	}
+	var item models.Items
+	for it.Next(context.TODO()) {
+		err := it.Decode(&item)
+		if err != nil {
+			log.Fatal(err)
+		}
+		items = append(items, item)
+	}
+	for i := range protocols {
+		filteredItems := getItemByIdProtocol(items, protocols[i].Id)
+		protocols[i].Items = filteredItems
 	}
 
-	var showLoaded []bson.M
-	if err = showLoadedCursor.All(ctx, &showLoaded); err!= nil{
-		log.Fatal(err)
+	json.NewEncoder(w).Encode(protocols)
+}
+func getItemByIdProtocol(items []models.Items, id string) []models.Items {
+	result := []models.Items{}
+	for i := range items {
+		if items[i].Id == id {
+			result = append(result, items[i])
+		}
 	}
-
-	json.NewEncoder(w).Encode(showLoaded) 
+	return result
 }
 
 func getProtocol(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +61,6 @@ func getProtocol(w http.ResponseWriter, r *http.Request) {
 	var protocol models.Protocols
 	var params = mux.Vars(r)
 	db, _ := helper.Connect()
-	
 
 	var id string = params["id"]
 
@@ -87,8 +105,6 @@ func updateProtocol(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(protocol)
 }
-
-
 
 func MainProtocols() {
 	r := helper.Routes
