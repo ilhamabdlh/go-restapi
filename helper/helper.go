@@ -20,14 +20,11 @@ func Connect() (*mongo.Database, error) {
     if err != nil {
         return nil, err
     }
-	
     err = client.Connect(ctx)
     if err != nil {
         return nil, err
     }
-
 	collection := client.Database("mongosDB")
-
     return collection, nil
 }
 
@@ -37,15 +34,12 @@ type ErrNotFound struct {
 }
 
 func GetError(err error, w http.ResponseWriter) {
-
 	log.Fatal(err.Error())
 	var Response = ErrNotFound{
 		ErrorMessage: err.Error(),
 		StatusCode:   http.StatusInternalServerError,
 	}
-
 	message, _ := json.Marshal(Response)
-
 	w.WriteHeader(Response.StatusCode)
 	w.Write(message)
 	fmt.Println(message)
