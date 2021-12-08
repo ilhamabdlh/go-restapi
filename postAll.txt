@@ -1,0 +1,48 @@
+{
+    "id": "101",
+    "type": "device",
+    "name": "atop-switch",
+    "version": "1.2.3",
+    "modules": ["EHG1234", "EHG2451", "EHG0987"],
+    "configs": [{
+        "id": "101",
+        "type": "config",
+        "name": "config1",
+        "protocol": [{
+            "id": "101",
+            "type": "protocol",
+            "name": "snmp",
+            "items": [{
+                "id": "101",
+                "type": "device",
+                "name": "item1",
+                "priority": "high",
+                "default":{"max": 100, "min": 1},
+                "description": "testing",
+                "ui": true,
+                "persist": true
+            }]
+        }]
+    }],
+    "status": [{
+        "id": "101",
+        "type": "status",
+        "name": "status1",
+        "protocol": [{
+            "id": "101",
+            "type": "protocol",
+            "name": "mqtt",
+            "items": [{
+                "id": "101",
+                "type": "device",
+                "name": "item1",
+                "priority": "high",
+                "default":{"max": 100, "min": 1},
+                "description": "testing example",
+                "ui": true,
+                "persist": true
+            }]
+        }]
+
+    }]
+}
