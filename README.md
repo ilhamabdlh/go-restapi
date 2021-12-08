@@ -1,6 +1,6 @@
 # go-restapi
 
-## program usage steps:
+### program usage steps:
 1. download all data on your pc.
 2. open the shell and adjust the file path
 3. type "go build main.go" in shell
