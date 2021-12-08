@@ -5,68 +5,133 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 	
 	"github.com/ilhamabdlh/go-restapi/helper"
 	"github.com/ilhamabdlh/go-restapi/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	
 )
-// var collectionStatus = helper.ConnectStatusesDB()
 func getStatuses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	lookupStage := bson.D{{"$lookup", bson.D{{"from", "protocols"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "protocol"}}}}
-	lookupStageTwo := bson.D{{"$lookup", bson.D{{"from", "items"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "protocol.items"}}}}
-	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$protocol"}, {"preserveNullAndEmptyArrays", false}}}}
-
 	db, _ := helper.Connect()
-	showLoadedCursor, err := db.Collection("statuses").Aggregate(ctx, mongo.Pipeline{lookupStageTwo, unwindStage, lookupStage})
-	if err !=nil{
-		log.Fatal(err)
+
+	prot, _ := db.Collection("protocols").Find(context.TODO(), bson.M{})
+	stat, _ := db.Collection("statuses").Find(context.TODO(), bson.M{})
+	it, _ := db.Collection("items").Find(context.TODO(), bson.M{})
+
+	var statuses []models.Statuses
+	var protocols []models.Protocols 
+	var items []models.Items 
+
+	var protocol models.Protocols
+	for prot.Next(context.TODO()){
+		err := prot.Decode(&protocol) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		protocols = append(protocols, protocol)	
+	}
+	var status models.Statuses
+	for stat.Next(context.TODO()){
+		err := stat.Decode(&status) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		statuses = append(statuses, status)	
+	}
+	var item models.Items
+	for it.Next(context.TODO()){
+		err := it.Decode(&item) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		items = append(items, item)	
 	}
 
-	var ShowLoaded []bson.M
-	if err = showLoadedCursor.All(ctx, &ShowLoaded); err!= nil{
-		log.Fatal(err)
+	for i := range statuses {
+		filteredItems := getItemById(items, statuses[i].Id)
+		protocols[i].Items = filteredItems
 	}
+	for i := range statuses {
+		filteredProtocols := getProtocolById(protocols, statuses[i].Id)
+		statuses[i].Protocol = filteredProtocols
+	}
+	json.NewEncoder(w).Encode(statuses) 
 
-	json.NewEncoder(w).Encode(ShowLoaded) 
+}
+
+func getProtocolById(protocols []models.Protocols, id string) []models.Protocols {
+	result := []models.Protocols {}
+	for  i := range protocols {
+		if protocols[i].Id == id {
+			result = append(result, protocols[i])
+		}
+	}
+	return result
+}
+func getItemById(items []models.Items, id string) []models.Items {
+	result := []models.Items {}
+	for  i := range items {
+		if items[i].Id == id {
+			result = append(result, items[i])
+		}
+	}
+	return result
 }
 
 func getConfigs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
 	db, _ := helper.Connect()
 
-	lookupStage := bson.D{{"$lookup", bson.D{{"from", "protocols"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "protocol"}}}}
-	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$id"}, {"preserveNullAndEmptyArrays", false}}}}
+	prot, _ := db.Collection("protocols").Find(context.TODO(), bson.M{})
+	conf, _ := db.Collection("configs").Find(context.TODO(), bson.M{})
+	it, _ := db.Collection("items").Find(context.TODO(), bson.M{})
 
-	ShowLoadedCursor, err := db.Collection("configs").Aggregate(ctx, mongo.Pipeline{lookupStage, unwindStage})
-	if err !=nil{
-		log.Fatal(err)
+	var configs []models.Config
+	var protocols []models.Protocols 
+	var items []models.Items 
+
+	var protocol models.Protocols
+	for prot.Next(context.TODO()){
+		err := prot.Decode(&protocol) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		protocols = append(protocols, protocol)	
+	}
+	var config models.Config
+	for conf.Next(context.TODO()){
+		err := conf.Decode(&config) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		configs = append(configs, config)	
+	}
+	var item models.Items
+	for it.Next(context.TODO()){
+		err := it.Decode(&item) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		items = append(items, item)	
 	}
 
-	var ShowLoaded []bson.M
-	if err = ShowLoadedCursor.All(ctx, &ShowLoaded); err!= nil{
-		log.Fatal(err)
+	for i := range configs {
+		filteredItems := getItemById(items, configs[i].Id)
+		protocols[i].Items = filteredItems
 	}
-
-	json.NewEncoder(w).Encode(ShowLoaded)
+	for i := range configs {
+		filteredProtocols := getProtocolById(protocols, configs[i].Id)
+		configs[i].Protocol = filteredProtocols
+	}
+	json.NewEncoder(w).Encode(configs) 
 }
-
-
 
 func getStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var status models.Statuses
 	var params = mux.Vars(r)
-	
 
 	var id string = params["id"]
 	filter := bson.M{"id": id}
@@ -76,7 +141,6 @@ func getStatus(w http.ResponseWriter, r *http.Request) {
 		helper.GetError(err, w)
 		return
 	}
-
 	json.NewEncoder(w).Encode(status)
 }
 
@@ -95,7 +159,6 @@ func getConfig(w http.ResponseWriter, r *http.Request) {
 		helper.GetError(err, w)
 		return
 	}
-
 	json.NewEncoder(w).Encode(config)
 }
 
@@ -105,11 +168,8 @@ func updateStatuses(w http.ResponseWriter, r *http.Request) {
 
 	var params = mux.Vars(r)
 	var id string = params["id"]
-
 	var status models.Statuses
-	
 	filter := bson.M{"id": id}
-
 	_ = json.NewDecoder(r.Body).Decode(&status)
 
 	update := bson.D{
@@ -122,7 +182,6 @@ func updateStatuses(w http.ResponseWriter, r *http.Request) {
 	}
 	db, _ := helper.Connect()
 	err := db.Collection("statuses").FindOneAndUpdate(context.TODO(), filter, update).Decode(&status)
-
 
 	if err != nil {
 		helper.GetError(err, w)

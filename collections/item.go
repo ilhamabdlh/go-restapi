@@ -5,25 +5,17 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	// "time"
-	// "fmt"
-	
 
 	"github.com/gorilla/mux"
 	"github.com/ilhamabdlh/go-restapi/helper"
 	"github.com/ilhamabdlh/go-restapi/models"
 	"go.mongodb.org/mongo-driver/bson"
-	// "go.mongodb.org/mongo-driver/mongo"
 )
-
-// var collectionItem = helper.ConnectItemsDB()
-
 
 func getItems(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var items []models.Itemes
+	var items []models.Items
 	db, _ := helper.Connect()
-
 	cur, err := db.Collection("items").Find(context.TODO(), bson.M{})
 
 	if err != nil {
@@ -34,7 +26,7 @@ func getItems(w http.ResponseWriter, r *http.Request) {
 
 	for cur.Next(context.TODO()) {
 
-		var item models.Itemes
+		var item models.Items
 		err := cur.Decode(&item) 
 		if err != nil {
 			log.Fatal(err)
@@ -53,9 +45,9 @@ func getItems(w http.ResponseWriter, r *http.Request) {
 func getItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var item models.Itemes
+	var item models.Items
 	var params = mux.Vars(r)
-	
+
 	db, _ := helper.Connect()
 	var id string = params["id"]
 
@@ -65,7 +57,6 @@ func getItem(w http.ResponseWriter, r *http.Request) {
 		helper.GetError(err, w)
 		return
 	}
-
 	json.NewEncoder(w).Encode(item)
 } 
 
@@ -74,7 +65,7 @@ func updateItems(w http.ResponseWriter, r *http.Request) {
 
 	var params = mux.Vars(r)
 	var id string = params["id"]
-	var item models.Itemes
+	var item models.Items
 	filter := bson.M{"id": id}
 	db, _ := helper.Connect()
 	_ = json.NewDecoder(r.Body).Decode(&item)
@@ -96,16 +87,12 @@ func updateItems(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := db.Collection("items").FindOneAndUpdate(context.TODO(), filter, update).Decode(&item)
-
 	if err != nil {
 		helper.GetError(err, w)
 		return
 	}
-
 	json.NewEncoder(w).Encode(item)
-
 }
-
 
 func MainItems() {
 	r := helper.Routes
@@ -117,5 +104,4 @@ func MainItems() {
 	r.HandleFunc("/descriptor/configs", getConfigs).Methods("GET")
 	r.HandleFunc("/descriptor/configs/{id}", getConfig).Methods("GET")
 	r.HandleFunc("/descriptor/configs/{id}", updateConfigs).Methods("PUT")
-
 }

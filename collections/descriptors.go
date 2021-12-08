@@ -5,147 +5,180 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	// "time"
-
-
 	"strconv"
+	"fmt"
+	"os"
+	"io"
 	
 	"github.com/ilhamabdlh/go-restapi/helper"
 	"github.com/ilhamabdlh/go-restapi/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	// "go.mongodb.org/mongo-driver/mongo"
-
 )
-
 
 func getDescriptors(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	// db, _ := helper.Connect()
-	// var descriptors []models.Response
-	
-
-	// cur, err := db.Collection("descriptors").Find(context.TODO(), bson.M{})
-	// conf, _ := db.Collection("configs").Find(context.TODO(), bson.M{})
-
-	// if err != nil {
-	// 	helper.GetError(err, w)
-	// 	return
-	// }
-	// defer cur.Close(context.TODO())
-
-	// var response models.Response
-	// for cur.Next(context.TODO()) {
-
-	// 	var descriptor models.Descriptor
-	// 	err := cur.Decode(&descriptor) 
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	var status int
-	// 	if err != nil {
-	// 		status = 400
-	// 	} else {
-	// 		status = 200
-	// 	}
-
-		
-	// 	response.Data = descriptor
-	// 	response.Status = strconv.Itoa(status)
-	// 	response.Success = true
-	// 	response.Msg = http.StatusText(status)
-		
-
-		
-	// }
-
-	// var config models.Config
-	// erre := conf.Decode(&config) 
-	// if erre != nil {
-	// 	log.Fatal(err)
-	// }
-	// if response.Data.Id == config.Id{
-	// 	response.Data.Configs[0] = config
-	// }
-
-	// descriptors = append(descriptors, response)
-
-	// if err := cur.Err(); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// json.NewEncoder(w).Encode(descriptors)
-	
-
-
-	// ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	// lookupStageTwo := bson.D{{"$lookup", bson.D{{"from", "configs"}, {"localField", "id"}, {"foreignField", "id"}, {"as", "configs"}}}}
-	// lookupStageThree := bson.D{{"$lookup", bson.D{{"from", "protocol"}, {"localField", "id"}, {"foreignField", "configs.id"}, {"as", "configs.protocol"}}}}
-	// unwindStage := bson.D{{"$unwind", bson.D{{"path", "$configs"}, {"preserveNullAndEmptyArrays", false}}}}
-
-	// showLoadedCursor, err := db.Collection("descriptors").Aggregate(ctx, mongo.Pipeline{lookupStageTwo, unwindStage, lookupStageThree})
-	// if err !=nil{
-	// 	log.Fatal(err)
-	// }
-
-	// var showLoaded []bson.M
-	// if err = showLoadedCursor.All(ctx, &showLoaded); err!= nil{
-	// 	log.Fatal(err)
-	// }
-
-	
-
-	// descriptors = append(descriptors, descriptor)
-
-
-
-
-	var descriptors []models.Response
 	db, _ := helper.Connect()
 
 	cur, err := db.Collection("descriptors").Find(context.TODO(), bson.M{})
+	conf, _ := db.Collection("configs").Find(context.TODO(), bson.M{})
+	prot, _ := db.Collection("protocols").Find(context.TODO(), bson.M{})
+	stat, _ := db.Collection("statuses").Find(context.TODO(), bson.M{})
+	it, _ := db.Collection("items").Find(context.TODO(), bson.M{})
 
 	if err != nil {
 		helper.GetError(err, w)
 		return
 	}
 	defer cur.Close(context.TODO())
+	
+	var descriptors []models.Descriptor
+	var responses []models.Response
+	var configs []models.Config
+	var statuses []models.Statuses
+	var protocols []models.Protocols 
+	var items []models.Items 
 
+	var descriptor models.Descriptor
 	for cur.Next(context.TODO()) {
-
-		var descriptor models.Descriptor
+		
 		err := cur.Decode(&descriptor) 
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		var status int
+		descriptors = append(descriptors, descriptor)
+	}
+	var config models.Config
+	for conf.Next(context.TODO()){
+		err := conf.Decode(&config) 
 		if err != nil {
-			status = 400
-		} else {
-			status = 200
+			log.Fatal(err)
 		}
-
-		var response models.Response
-		response.Data = descriptor
-		response.Status = strconv.Itoa(status)
-		response.Success = true
-		response.Msg = http.StatusText(status)
-
-		descriptors = append(descriptors, response)
+		configs = append(configs, config)	
+	}
+	var protocol models.Protocols
+	for prot.Next(context.TODO()){
+		err := prot.Decode(&protocol) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		protocols = append(protocols, protocol)	
+	}
+	var status models.Statuses
+	for stat.Next(context.TODO()){
+		err := stat.Decode(&status) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		statuses = append(statuses, status)	
+	}
+	var item models.Items
+	for it.Next(context.TODO()){
+		err := it.Decode(&item) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		items = append(items, item)	
 	}
 
+	for i := range descriptors {
+		filteredItems := getItemByIdFromDescriptor(items, descriptors[i].Id)
+		protocols[i].Items = filteredItems
+		filteredItemsTwo := getItemByIdFromDescriptor(items, descriptors[i].Id)
+		protocols[i].Items = filteredItemsTwo
+	}
 
-	json.NewEncoder(w).Encode(descriptors)
+	for i := range descriptors {
+		filteredProtocols := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+		configs[i].Protocol = filteredProtocols
+		filteredProtocolsTwo := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+		statuses[i].Protocol = filteredProtocolsTwo
+	}
 
+	for i := range descriptors {
+		filteredConfigs := getConfigByIdFromDescriptor(configs, descriptors[i].Id)
+		descriptors[i].Configs = filteredConfigs
+		filteredStatuses := getStatusByIdFromDescriptor(statuses, descriptors[i].Id)
+		descriptors[i].Status = filteredStatuses
+	}
+	var msg int
+	var success bool
+	if err != nil {
+		msg = 400
+		success = false
+	} else {
+		msg = 200
+		success = true
+	}
+
+	var response models.Response
+	response.Data = descriptors  
+	response.Status = strconv.Itoa(msg)
+	response.Success = success
+	response.Msg = http.StatusText(msg)
+	responses = append(responses, response)
 	
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+	json.NewEncoder(w).Encode(response)
+}
 
+func getConfigByIdFromDescriptor(configs []models.Config, id string) []models.Config {
+	result := []models.Config {}
+	for  i := range configs {
+		if configs[i].Id == id {
+			result = append(result, configs[i])
+		}
+	}
+	return result
+}
+
+func getStatusByIdFromDescriptor(statuses []models.Statuses, id string) []models.Statuses {
+	result := []models.Statuses {}
+	for  i := range statuses {
+		if statuses[i].Id == id {
+			result = append(result, statuses[i])
+		}
+	}
+	return result
+}
+
+func getProtocolByIdFromDescriptor(protocols []models.Protocols, id string) []models.Protocols {
+	result := []models.Protocols {}
+	for  i := range protocols {
+		if protocols[i].Id == id {
+			result = append(result, protocols[i])
+		}
+	}
+	return result
+}
+func getItemByIdFromDescriptor(items []models.Items, id string) []models.Items {
+	result := []models.Items {}
+	for  i := range items {
+		if items[i].Id == id {
+			result = append(result, items[i])
+		}
+	}
+	return result
+}
+
+func getStatusCode(w http.ResponseWriter, r *http.Request){
+	var status string
+	if w != nil {
+		status = "400"
+		r := fmt.Sprintln(status)
+		io.WriteString(os.Stdout, r)
+	} else {
+		status = "200"
+		e := fmt.Sprintln(status)
+		io.WriteString(os.Stdout, e)
+	}
 }
 
 func getDescriptor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
+	var descriptors []models.Descriptor
 	var descriptor models.Descriptor
 	var params = mux.Vars(r)
 	
@@ -153,35 +186,95 @@ func getDescriptor(w http.ResponseWriter, r *http.Request) {
 
 	filter := bson.M{"id": id}
 	db, _ := helper.Connect()
-	err := db.Collection("descriptors").FindOne(context.TODO(), filter).Decode(&descriptor)
+	err := db.Collection("descriptors").FindOne(context.TODO(), filter).Decode(&descriptor)	
+	conf, _ := db.Collection("configs").Find(context.TODO(), bson.M{})
+	prot, _ := db.Collection("protocols").Find(context.TODO(), bson.M{})
+	stat, _ := db.Collection("statuses").Find(context.TODO(), bson.M{})
+	it, _ := db.Collection("items").Find(context.TODO(), bson.M{})
+	
+	var configs []models.Config
+	var statuses []models.Statuses
+	var protocols []models.Protocols 
+	var items []models.Items 
+
+	descriptors = append(descriptors, descriptor)
+
+	var config models.Config
+	for conf.Next(context.TODO()){
+		err := conf.Decode(&config) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		configs = append(configs, config)	
+	}
+	var protocol models.Protocols
+	for prot.Next(context.TODO()){
+		err := prot.Decode(&protocol) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		protocols = append(protocols, protocol)	
+	}
+	var status models.Statuses
+	for stat.Next(context.TODO()){
+		err := stat.Decode(&status) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		statuses = append(statuses, status)	
+	}
+	var item models.Items
+	for it.Next(context.TODO()){
+		err := it.Decode(&item) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		items = append(items, item)	
+	}
+
+	for i := range descriptors {
+		filteredItems := getItemByIdFromDescriptor(items, descriptors[i].Id)
+		protocols[i].Items = filteredItems
+		filteredItemsTwo := getItemByIdFromDescriptor(items, descriptors[i].Id)
+		protocols[i].Items = filteredItemsTwo
+	}
+
+	for i := range descriptors {
+		filteredProtocols := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+		configs[i].Protocol = filteredProtocols
+		filteredProtocolsTwo := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+		statuses[i].Protocol = filteredProtocolsTwo
+	}
+
+	for i := range descriptors {
+		filteredConfigs := getConfigByIdFromDescriptor(configs, descriptors[i].Id)
+		descriptors[i].Configs = filteredConfigs
+		filteredStatuses := getStatusByIdFromDescriptor(statuses, descriptors[i].Id)
+		descriptors[i].Status = filteredStatuses
+	}
 
 	if err != nil {
 		helper.GetError(err, w)
 		return
 	}
 
-	var status int
+	descriptors = append(descriptors, descriptor)
+	var msg int
 	if err != nil {
-		status = 400
+		msg = 400
 	} else {
-		status = 200
+		msg = 200
 	}
 
-	var response models.Response
-	response.Data = descriptor
-	response.Status = strconv.Itoa(status)
+	var response models.Responses
+	response.Data = descriptors[0]
+	response.Status = strconv.Itoa(msg)
 	response.Success = true
-	response.Msg = http.StatusText(status)
-
-	
+	response.Msg = http.StatusText(msg)
 
 	json.NewEncoder(w).Encode(response)
 }
 
-// var collectionConfigDes = helper.ConnectConfigsDB()
-// var collectionStatusDes = helper.ConnectStatusesDB()
-// var collectionProtocolDes = helper.ConnectProtocolsDB()
-// var collectionItemDes = helper.ConnectItemsDB()
 func createDescriptor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -190,60 +283,25 @@ func createDescriptor(w http.ResponseWriter, r *http.Request) {
 	var status models.Statuses
 	var protocolOne models.Protocols
 	var protocolTwo models.Protocols
-	var itemOne models.Itemes
-	var itemTwo models.Itemes
+	var itemOne models.Items
+	var itemTwo models.Items
 	db, _ := helper.Connect()
 
 	_ = json.NewDecoder(r.Body).Decode(&descriptor)
-	result, _ := db.Collection("descriptors").InsertOne(context.TODO(), descriptor)
 
 	itemOne = descriptor.Configs[0].Protocol[0].Items[0]
 	itemTwo = descriptor.Status[0].Protocol[0].Items[0]
 	_ = json.NewDecoder(r.Body).Decode(&itemOne)
 	_ = json.NewDecoder(r.Body).Decode(&itemTwo)
 	
-
-	
-
-	descriptor.Configs[0].Protocol[0].Items = make([]models.Itemes, 0)
-	descriptor.Status[0].Protocol[0].Items = make([]models.Itemes, 0)
+	descriptor.Configs[0].Protocol[0].Items = make([]models.Items, 0)
+	descriptor.Status[0].Protocol[0].Items = make([]models.Items, 0)
 	
 	protocolOne = descriptor.Configs[0].Protocol[0]
 	protocolTwo = descriptor.Status[0].Protocol[0]
 
-
-
-	// bar := models.Protocols{
-	// 	Id: descriptor.Configs[0].Protocol[0].Id,
-	// 	Type: descriptor.Configs[0].Protocol[0].Type,
-	// 	Name: descriptor.Configs[0].Protocol[0].Name,
-	// 	Items: make([]models.Itemes, 0),
-	// }
-
-	// bor := models.Statuses{
-	// 	Id: descriptor.Status[0].Id,
-	// 	Type: descriptor.Status[0].Type,
-	// 	Name: descriptor.Status[0].Name,
-	// 	Protocol: make([]models.Protocols, 0),
-	// }
-
-	// protocoler, errorr := json.Marshal(struct{
-	// 	*models.Statuses
-	// 	Protocol string `json:"protocol"`
-	// }{
-	// 	Statuses: &bor,
-	// 	Protocol: "",
-	// })
-
-	// if errorr != nil {
-	// 	panic(errorr)
-	// }
-	// gerd  := string(protocoler)
-
 	_ = json.NewDecoder(r.Body).Decode(&protocolOne)
 	_ = json.NewDecoder(r.Body).Decode(&protocolTwo)
-
-
 
 	descriptor.Status[0].Protocol = make([]models.Protocols, 0)
 	descriptor.Configs[0].Protocol = make([]models.Protocols, 0)
@@ -253,7 +311,6 @@ func createDescriptor(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&status)
 	_ = json.NewDecoder(r.Body).Decode(&config)
 
-	
 	conf, errr := db.Collection("configs").InsertOne(context.TODO(), config)
 	stat, _ := db.Collection("statuses").InsertOne(context.TODO(), status)
 	ptOne, _ := db.Collection("protocols").InsertOne(context.TODO(), protocolOne)
@@ -261,33 +318,16 @@ func createDescriptor(w http.ResponseWriter, r *http.Request) {
 	itOne, _ := db.Collection("items").InsertOne(context.TODO(), itemOne)
 	itTwo, _ := db.Collection("items").InsertOne(context.TODO(), itemTwo)
 
-	// S := models.Statuses{}
-	// C := models.Config{}
-	// desc := models.Descriptor{
-	// 	Id: descriptor.Id,
-	// 	Type: descriptor.Type,
-	// 	Name: descriptor.Name,
-	// 	Version: descriptor.Version,
-	// 	Modules: descriptor.Modules,
-	// 	Configs: C,
-	// 	Status: S,
-	// } 
+	descriptor.Status = make([]models.Statuses, 0)
+	descriptor.Configs = make([]models.Config, 0)
 
-	// val, _ := json.Marshal(desc)
-	// value := string(val)
-
-	// descriptor.Status = make([]models.Statuses, 0)
-	// descriptor.Configs = make([]models.Config, 0)
-
-	// _ = json.NewDecoder(r.Body).Decode(&descriptor)
-	// result, _ := db.Collection("descriptors").InsertOne(context.TODO(), descriptor)
-
+	_ = json.NewDecoder(r.Body).Decode(&descriptor)
+	result, _ := db.Collection("descriptors").InsertOne(context.TODO(), descriptor)
 	
 	if errr != nil {
 		helper.GetError(errr, w)
 		return
 	}
-
 	json.NewEncoder(w).Encode(result)
 	json.NewEncoder(w).Encode(stat)
 	json.NewEncoder(w).Encode(conf)
@@ -322,18 +362,13 @@ func updateDescriptor(w http.ResponseWriter, r *http.Request) {
 	db, _ := helper.Connect()
 
 	err := db.Collection("descriptors").FindOneAndUpdate(context.TODO(), filter, update).Decode(&descriptor)
-
 	if err != nil {
 		helper.GetError(err, w)
 		return
 	}
-
 	descriptor.Id = id
-
 	json.NewEncoder(w).Encode(descriptor)
 }
-
-
 
 func MainDescriptors() {
 	r := helper.Routes
@@ -342,5 +377,6 @@ func MainDescriptors() {
 	r.HandleFunc("/descriptor/{id}", getDescriptor).Methods("GET")
 	r.HandleFunc("/descriptor/New", createDescriptor).Methods("POST")
 	r.HandleFunc("/descriptor/{id}", updateDescriptor).Methods("PUT")
+	r.HandleFunc("/descriptor/", getStatusCode).Methods("GET")
 
 }

@@ -11,14 +11,13 @@ import (
 var Routers = helper.Routes
 
 func main() {
-	
 	collections.MainProtocols()
 	collections.MainStatusConfigs()
 	collections.MainItems()
 	collections.MainDescriptors()
 
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", ""})
-	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT"})
+	methods := handlers.AllowedMethods([]string{"POST, GET, OPTIONS, PUT, DELETE"})
 	origin := handlers.AllowedOrigins([]string{"*"})
 	http.ListenAndServe(":4001", handlers.CORS(headers, methods, origin)(Routers))
 }
