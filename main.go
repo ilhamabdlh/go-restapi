@@ -11,6 +11,7 @@ import (
 var Routers = helper.Routes
 
 func main() {
+	
 	collections.MainProtocols()
 	collections.MainStatusConfigs()
 	collections.MainItems()
