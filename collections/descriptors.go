@@ -81,17 +81,17 @@ func getDescriptors(w http.ResponseWriter, r *http.Request) {
 		items = append(items, item)	
 	}
 
-	for i := range descriptors {
-		filteredItems := getItemByIdFromDescriptor(items, descriptors[i].Id)
+	for i := range protocols {
+		filteredItems := getItemByIdFromDescriptor(items, protocols[i].Id)
 		protocols[i].Items = filteredItems
-		filteredItemsTwo := getItemByIdFromDescriptor(items, descriptors[i].Id)
+		filteredItemsTwo := getItemByIdFromDescriptor(items, protocols[i].Id)
 		protocols[i].Items = filteredItemsTwo
 	}
 
-	for i := range descriptors {
-		filteredProtocols := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+	for i := range configs {
+		filteredProtocols := getProtocolByIdFromDescriptor(protocols, configs[i].Id)
 		configs[i].Protocol = filteredProtocols
-		filteredProtocolsTwo := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+		filteredProtocolsTwo := getProtocolByIdFromDescriptor(protocols, statuses[i].Id)
 		statuses[i].Protocol = filteredProtocolsTwo
 	}
 
@@ -232,17 +232,17 @@ func getDescriptor(w http.ResponseWriter, r *http.Request) {
 		items = append(items, item)	
 	}
 
-	for i := range descriptors {
-		filteredItems := getItemByIdFromDescriptor(items, descriptors[i].Id)
+	for i := range protocols {
+		filteredItems := getItemByIdFromDescriptor(items, protocols[i].Id)
 		protocols[i].Items = filteredItems
-		filteredItemsTwo := getItemByIdFromDescriptor(items, descriptors[i].Id)
+		filteredItemsTwo := getItemByIdFromDescriptor(items, protocols[i].Id)
 		protocols[i].Items = filteredItemsTwo
 	}
 
-	for i := range descriptors {
-		filteredProtocols := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+	for i := range configs {
+		filteredProtocols := getProtocolByIdFromDescriptor(protocols, configs[i].Id)
 		configs[i].Protocol = filteredProtocols
-		filteredProtocolsTwo := getProtocolByIdFromDescriptor(protocols, descriptors[i].Id)
+		filteredProtocolsTwo := getProtocolByIdFromDescriptor(protocols, statuses[i].Id)
 		statuses[i].Protocol = filteredProtocolsTwo
 	}
 
@@ -258,7 +258,7 @@ func getDescriptor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	descriptors = append(descriptors, descriptor)
+	// descriptors = append(descriptors, descriptor)
 	var msg int
 	if err != nil {
 		msg = 400
